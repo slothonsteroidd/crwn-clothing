@@ -2,6 +2,10 @@ import "./App.css";
 import Home from "./pages/homepage/homepage.component";
 import { Route, Switch, Link } from "react-router-dom";
 import Shop from "./pages/shop-page/shop.component";
+import Header from "./components/header/header.component";
+import SignInAndSignUp from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.component";
+import { auth } from "./firebase/firebase.utils";
+import React from "react";
 // const HomePage = (props) => {
 //   console.log(props);
 //   return (
@@ -37,15 +41,38 @@ import Shop from "./pages/shop-page/shop.component";
 //   );
 // };
 
-function App() {
-  return (
-    <div>
-      <Switch>
-        <Route exact path="/" component={Home} />
-        <Route exact path="/shop" component={Shop} />
-      </Switch>
-    </div>
-  );
+class App extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      currentUser: null,
+    };
+  }
+
+  handleCloseSubscription = null;
+  componentDidMount() {
+    this.handleCloseSubscription = auth.onAuthStateChanged((user) => {
+      this.setState({ currentUser: user });
+      console.log(user);
+    });
+  }
+  componentWillUnmount() {
+    this.handleCloseSubscription();
+  }
+
+  render() {
+    return (
+      <div>
+        <Header currentUser={this.state.currentUser} />
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route exact path="/shop" component={Shop} />
+          <Route exact path="/signin" component={SignInAndSignUp} />
+        </Switch>
+        <h1>{this.state?.currentUser?.displayName}</h1>
+      </div>
+    );
+  }
 }
 
 export default App;
