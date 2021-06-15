@@ -53,6 +53,7 @@ class App extends React.Component {
   handleCloseSubscription = null;
   componentDidMount() {
     this.handleCloseSubscription = auth.onAuthStateChanged(async (user) => {
+      console.log("auth user: ", user);
       if (user) {
         const userRef = await createUserProfileDocument(user);
         console.log("userref: ", userRef);
