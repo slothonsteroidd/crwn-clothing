@@ -6,6 +6,7 @@ import Header from "./components/header/header.component";
 import SignInAndSignUp from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.component";
 import { auth } from "./firebase/firebase.utils";
 import React from "react";
+import { createUserProfileDocument } from "./firebase/firebase.utils";
 // const HomePage = (props) => {
 //   console.log(props);
 //   return (
@@ -51,9 +52,26 @@ class App extends React.Component {
 
   handleCloseSubscription = null;
   componentDidMount() {
-    this.handleCloseSubscription = auth.onAuthStateChanged((user) => {
-      this.setState({ currentUser: user });
-      console.log(user);
+    this.handleCloseSubscription = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const userRef = await createUserProfileDocument(user);
+        console.log("userref: ", userRef);
+        userRef.onSnapshot((snapshot) => {
+          console.log("snapshot: ", snapshot);
+          console.log("snapshot data: ", snapshot.data());
+          this.setState(
+            {
+              currentUser: {
+                id: snapshot.id,
+                ...snapshot.data(),
+              },
+            },
+            () => console.log(this.state)
+          );
+        });
+      } else {
+        this.setState({ currentUser: user });
+      }
     });
   }
   componentWillUnmount() {
@@ -69,7 +87,7 @@ class App extends React.Component {
           <Route exact path="/shop" component={Shop} />
           <Route exact path="/signin" component={SignInAndSignUp} />
         </Switch>
-        <h1>{this.state?.currentUser?.displayName}</h1>
+        <h1>{this.state?.currentUser?.uid}</h1>
       </div>
     );
   }
